@@ -1,35 +1,89 @@
+
 #include <iostream>
 #include <chrono>
 #include <vector>
+#include <algorithm>
+#include <random>
+#include <map>
 #include "arbin.h"
 
 using namespace std;
 using namespace chrono;
 
-int main() {
-    const int N = 10007;
-    vector<int> valeurs;
-    for (int i = 0; i < N; i++)
-        valeurs.push_back((i * 7919) % N);
+void tester(vector<int> valeurs, string type) {
     arbre a;
+    map<int, int> m;
+
+    cout << "\n===== " << type << " =====" << endl;
+
+    // ABR : insertion
     auto debut = high_resolution_clock::now();
-    for (int val : valeurs)
-        a.inserer(val);
+    for (int v : valeurs)
+        a.inserer(v);
     auto fin = high_resolution_clock::now();
-    auto tInsertion = duration_cast<nanoseconds>(fin - debut).count();
+    cout << "ABR - Insertion : "
+         << duration_cast<microseconds>(fin - debut).count()
+         << " us" << endl;
+
+    // map : insertion
     debut = high_resolution_clock::now();
-    for (int val : valeurs)
-        a.rechercher(val);
+    for (int v : valeurs)
+        m.insert({v, v});
     fin = high_resolution_clock::now();
-    auto tRecherche = duration_cast<nanoseconds>(fin - debut).count();
+    cout << "map - Insertion : "
+         << duration_cast<microseconds>(fin - debut).count()
+         << " us" << endl;
+
+    // ABR : recherche
     debut = high_resolution_clock::now();
-    for (int val : valeurs)
-        a.supprimer(val);
+    for (int v : valeurs)
+        a.rechercher(v);
     fin = high_resolution_clock::now();
-    auto tSuppression = duration_cast<nanoseconds>(fin - debut).count();
-    cout << "Nombre de valeurs : " << N << endl;
-    cout << "Insertion : " << tInsertion << " ns" << endl;
-    cout << "Recherche : " << tRecherche << " ns" << endl;
-    cout << "Suppression : " << tSuppression << " ns" << endl;
+    cout << "ABR - Recherche : "
+         << duration_cast<microseconds>(fin - debut).count()
+         << " us" << endl;
+
+    // map : recherche
+    debut = high_resolution_clock::now();
+    for (int v : valeurs)
+        m.find(v);
+    fin = high_resolution_clock::now();
+    cout << "map - Recherche : "
+         << duration_cast<microseconds>(fin - debut).count()
+         << " us" << endl;
+
+    // ABR : suppression
+    debut = high_resolution_clock::now();
+    for (int v : valeurs)
+        a.supprimer(v);
+    fin = high_resolution_clock::now();
+    cout << "ABR - Suppression : "
+         << duration_cast<microseconds>(fin - debut).count()
+         << " us" << endl;
+
+    // map : suppression
+    debut = high_resolution_clock::now();
+    for (int v : valeurs)
+        m.erase(v);
+    fin = high_resolution_clock::now();
+    cout << "map - Suppression : "
+         << duration_cast<microseconds>(fin - debut).count()
+         << " us" << endl;
+}
+
+int main() {
+    const int N = 32000;
+    vector<int> valeurs(N);
+
+    for (int i = 0; i < N; i++)
+        valeurs[i] = i + 1;
+
+    tester(valeurs, "Valeurs ordonnees");
+
+    mt19937 gen(random_device{}());
+    shuffle(valeurs.begin(), valeurs.end(), gen);
+
+    tester(valeurs, "Valeurs aleatoires");
+
     return 0;
 }
